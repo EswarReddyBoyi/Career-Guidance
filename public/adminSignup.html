@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin Signup</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<header class="site-header">
+  <a href="index.html">
+    <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+  </a>
+</header>
+
+<body>
+<main class="container">
+  <h1>Admin Signup</h1>
+  <form id="adminSignupForm">
+    <label>Email: <input type="email" id="email" required></label><br>
+    <label>Password: <input type="password" id="password" required></label><br>
+    <button type="submit">Sign Up</button>
+  </form>
+  <div id="signupMessage"></div>
+    <div class="backLogin">
+    <a href="adminLogin.html">← Back to Admin Login</a>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBK88tVE-wZ9Wr2eaTxg0JpJ7PH8Zqse68",
+  authDomain: "careerguidance-66688.firebaseapp.com",
+  projectId: "careerguidance-66688",
+  storageBucket: "careerguidance-66688.appspot.com",
+  messagingSenderId: "465373265576",
+  appId: "1:465373265576:web:0569aae27bddd883a84c9d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const form = document.getElementById('adminSignupForm');
+const msg = document.getElementById('signupMessage');
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Save admin in Firestore
+    await setDoc(doc(db, "admins", email), {
+      email: email,
+      role: "admin",
+      createdAt: new Date()
+    });
+
+    msg.textContent = 'Admin account created successfully! Now you can login.';
+    form.reset();
+  } catch(err){
+    msg.textContent = 'Error: '+err.message;
+  }
+});
+</script>
+</body>
+</html>

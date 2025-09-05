@@ -1,0 +1,285 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Profile</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  margin:0; padding:0;
+}
+
+/* Main container */
+.container {
+  width: 85%;
+  max-width: 1000px;
+  margin: 120px auto 60px auto;
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Heading */
+h1 {
+  font-size: 36px;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 15px;
+  color: #000;
+  text-align: center;
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.section > div {
+  flex: 1 1 45%;
+  display: flex;
+  flex-direction: column;
+}
+
+.section.full {
+  flex: 1 1 100%;
+}
+
+/* Labels and inputs */
+label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+input, select, textarea {
+  padding: 10px 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  width: 100%;
+}
+
+textarea { resize: vertical; min-height: 80px; }
+
+/* Buttons container */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  transition: 0.3s;
+}
+#editProfile, #saveProfile {
+  border-radius: 12px;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+}
+
+#editProfile { background-color: #2196F3; }
+#editProfile:hover { background-color: #1976d2; }
+#saveProfile { background-color: #4CAF50; }
+#saveProfile:hover { background-color: #43a047; }
+
+/* Toast container */
+#toastContainer {
+  position: fixed;
+  top: 100px;
+  right: 30px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  min-width: 250px;
+  background-color: #333;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideIn 0.3s forwards, fadeOut 0.5s 3s forwards;
+  font-size: 14px;
+}
+@keyframes slideIn { to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+.toast.success { background-color: #4CAF50; }
+.toast.error { background-color: #f44336; }
+.toast.info { background-color: #2196F3; }
+
+@media (max-width: 900px) {
+  .section > div { flex: 1 1 100%; }
+  .button-group { flex-direction: column; }
+}
+</style>
+</head>
+
+<header class="site-header">
+  <a href="profile.html"><img src="images/logo.png" alt="Career Guidance Logo" class="logo"></a>
+</header>
+
+<body>
+<div id="toastContainer"></div>
+<a href="dashboard.html" class="back-btn">← Back</a>
+
+<main class="container">
+  <h1>Profile</h1>
+
+  <form id="profileForm">
+
+    <div class="section">
+      <div>
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" disabled>
+      </div>
+      <div>
+        <label for="email">Email</label>
+        <input type="email" id="email" disabled>
+      </div>
+    </div>
+
+    <div class="section">
+      <div>
+        <label for="phone">Phone Number</label>
+        <input type="text" id="phone" disabled>
+      </div>
+      <div>
+        <label for="location">Location</label>
+        <input type="text" id="location" disabled>
+      </div>
+    </div>
+
+    <div class="section">
+      <div>
+        <label for="dob">Date of Birth</label>
+        <input type="date" id="dob" disabled>
+      </div>
+      <div>
+        <label for="role">Role</label>
+        <select id="role" disabled>
+          <option value="student">Student</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div>
+        <label for="course">Course</label>
+        <input type="text" id="course" disabled>
+      </div>
+      <div>
+        <label for="stream">Stream</label>
+        <input type="text" id="stream" disabled>
+      </div>
+    </div>
+
+    <div class="section full">
+      <label for="bio">Bio / Career Goals</label>
+      <textarea id="bio" disabled></textarea>
+    </div>
+
+    <div class="section full">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter new password" disabled>
+    </div>
+
+    <div class="button-group">
+      <button type="button" id="editProfile">Edit</button>
+      <button type="submit" id="saveProfile" disabled>Save</button>
+    </div>
+
+  </form>
+</main>
+
+<script type="module">
+import { db, auth } from './js/firebaseConfig.js';
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const editBtn = document.getElementById('editProfile');
+const saveBtn = document.getElementById('saveProfile');
+const formFields = document.querySelectorAll('#profileForm input, #profileForm select, #profileForm textarea');
+
+function showToast(message, type='info', duration=3000) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), duration + 500);
+}
+
+// Load profile
+async function loadProfile() {
+  if(!auth.currentUser){ showToast('Please login', 'error'); return; }
+  const docRef = doc(db,'users',auth.currentUser.uid);
+  const docSnap = await getDoc(docRef);
+  if(docSnap.exists()){
+    const data = docSnap.data();
+    document.getElementById('fullname').value = data.fullname || '';
+    document.getElementById('email').value = data.email || '';
+    document.getElementById('phone').value = data.phone || '';
+    document.getElementById('location').value = data.location || '';
+    document.getElementById('dob').value = data.dob || '';
+    document.getElementById('role').value = data.role || 'student';
+    document.getElementById('course').value = data.course || '';
+    document.getElementById('stream').value = data.stream || '';
+    document.getElementById('bio').value = data.bio || '';
+  }
+}
+
+// Enable edit
+editBtn.addEventListener('click', ()=>{
+  formFields.forEach(f=>f.disabled=false);
+  saveBtn.disabled=false;
+  editBtn.disabled=true;
+});
+
+// Save profile
+document.getElementById('profileForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  if(!auth.currentUser){ showToast('Login first', 'error'); return; }
+  const profileData = {
+    fullname: document.getElementById('fullname').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    location: document.getElementById('location').value,
+    dob: document.getElementById('dob').value,
+    role: document.getElementById('role').value,
+    course: document.getElementById('course').value,
+    stream: document.getElementById('stream').value,
+    bio: document.getElementById('bio').value
+  };
+  await setDoc(doc(db,'users',auth.currentUser.uid), profileData, {merge:true});
+  formFields.forEach(f=>f.disabled=true);
+  saveBtn.disabled=true;
+  editBtn.disabled=false;
+  showToast('Profile updated successfully!', 'success');
+});
+
+auth.onAuthStateChanged(user=>{ if(user) loadProfile(); });
+</script>
+</body>
+</html>

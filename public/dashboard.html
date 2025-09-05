@@ -1,0 +1,173 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Student Dashboard</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+/* General Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container */
+.container { 
+  width: 90%;
+  min-height: 75vh; /* more than 70% height */
+  padding: 40px;
+  background: #fff; 
+  border-radius: 20px; 
+  box-shadow: 0 12px 35px rgba(0,0,0,0.15); 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Header (welcome + logout) */
+header {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 35px; 
+  padding-bottom: 15px; 
+  border-bottom: 2px solid #f1f1f1;
+}
+header h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #333;
+}
+#logoutBtn {
+  background: #e53935;
+  padding: 15px 30px;
+  font-size: 18px;
+}
+#logoutBtn:hover {
+  background: #c62828;
+}
+
+/* Dashboard buttons grid */
+section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+/* Dashboard action buttons */
+button.actionBtn {
+  padding: 30px 20px; /* bigger buttons */
+  cursor: pointer;
+  border: none;
+  background: #4CAF50;
+  color: white;
+  border-radius: 15px;
+  font-size: 20px; /* bigger text */
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+button.actionBtn:hover {
+  background: #43a047;
+  transform: translateY(-5px) scale(1.08);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+}
+button.actionBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Logo on top-left */
+.site-header {
+  position: fixed;
+  top: 15px;
+  left: 20px;
+  z-index: 1000;
+}
+.logo {
+  width: 55px;
+  height: 55px;
+}
+.settings-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background-color: #042a53; /* Blue */
+  color: white;
+  padding: 8px 14px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.settings-btn:hover {
+  background-color: #0056b3; /* Darker blue */
+}
+
+</style>
+</head>
+
+<header class="site-header">
+  <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+</header>
+
+<body>
+  <a href="profile.html" class="settings-btn">⚙️</a>
+
+<main class="container">
+  <header>
+    <h2>Welcome, <span id="userName">Student</span></h2>
+    <button id="logoutBtn" class="actionBtn">Logout</button>
+  </header>
+
+  <section>
+    <button class="actionBtn" id="careerBtn">Choose Career</button>
+    <button class="actionBtn" id="locationBtn">Choose Location</button>
+    <button class="actionBtn" id="availableCollegesBtn">Available Colleges</button>
+    <button class="actionBtn" id="registeredCollegesBtn">Registered Colleges</button>
+    <button class="actionBtn" id="aptitudeBtn">Take Aptitude Test</button>
+    <button class="actionBtn" id="testResultsBtn">View Test Results</button>
+  </section>
+</main>
+
+<script type="module">
+import { auth } from "./js/firebaseConfig.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { logAction } from "./js/utils.js";
+
+// Show logged-in user
+document.getElementById('userName').textContent = localStorage.getItem('userName') || 'Student';
+
+// Logout
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await signOut(auth);
+  logAction(localStorage.getItem('userEmail'), 'logout', {});
+  localStorage.clear();
+  window.location = 'index.html';
+});
+
+// Button navigation
+document.getElementById('careerBtn').addEventListener('click', ()=> window.location='career.html');
+document.getElementById('locationBtn').addEventListener('click', ()=> window.location='location.html');
+document.getElementById('availableCollegesBtn').addEventListener('click', ()=> window.location='colleges.html');
+document.getElementById('registeredCollegesBtn').addEventListener('click', ()=> window.location='registeredColleges.html');
+document.getElementById('aptitudeBtn').addEventListener('click', ()=> window.location='aptitude.html');
+document.getElementById('testResultsBtn').addEventListener('click', ()=> window.location='result.html');
+
+// Log dashboard visit
+logAction(localStorage.getItem('userEmail'), 'dashboard_visit', {});
+</script>
+</body>
+</html>

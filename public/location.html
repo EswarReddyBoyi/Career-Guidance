@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Location</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+/* Full page and container styling */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  min-height: 100vh;
+  width: 100%;
+}
+
+.container {
+  width: 80%;
+  height: 80vh; /* 80% of viewport height */
+  margin: 80px auto; /* top/bottom margin */
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* Heading */
+h1 {
+  color: #000 !important;
+  font-size: 36px;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 3px solid #f1f1f1;
+  width: 100%;
+}
+
+/* Buttons grid */
+#locationButtons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 buttons per row */
+  gap: 30px;
+  margin-top: 40px;
+}
+
+/* Buttons styling */
+#locationButtons button {
+  padding: 25px;
+  font-size: 20px;
+  font-weight: 600;
+  border: none;
+  border-radius: 15px;
+  background: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+#locationButtons button:hover {
+  background: #43a047;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+#locationButtons button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+
+</style>
+</head>
+
+<header class="site-header">
+  <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+</header>
+
+<body>
+  <a href="dashboard.html" class="back-btn">← Back</a>
+
+  <main class="container">
+    <h1>Choose Location</h1>
+    <div id="locationButtons">
+      <button id="indiaBtn">India</button>
+      <button id="abroadBtn">Abroad</button>
+      <button id="usaBtn">USA</button>
+      <button id="ukBtn">UK</button>
+      <button id="canadaBtn">Canada</button>
+      <button id="australiaBtn">Australia</button>
+    </div>
+
+    <script>
+      const buttons = document.querySelectorAll('#locationButtons button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          localStorage.setItem('selectedLocation', btn.textContent);
+          window.location = 'colleges.html';
+        });
+      });
+    </script>
+  </main>
+</body>
+</html>

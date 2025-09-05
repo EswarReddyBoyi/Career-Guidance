@@ -1,0 +1,346 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin Portal</title>
+<style>
+/* Reset & container */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f0f2f5;
+}
+.container {
+  width: 80%;
+  margin: 120px auto 60px auto;
+}
+
+/* Header bar */
+header.site-header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #4CAF50;
+  padding: 15px 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+/* Logo */
+header .logo {
+  height: 70px;
+  width: auto;
+}
+
+/* Navigation buttons on the right */
+header nav {
+  display: flex;
+  gap: 20px;
+  margin-left: 800px; 
+}
+
+/* Buttons styling */
+header nav button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #4CAF50;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+header nav button:hover {
+  background: #4CAF50;
+}
+
+
+/* Section title */
+.section-title {
+  font-size: 40px;
+  display: bold;
+  color: #4CAF50;
+  margin: 20px 0 15px 0;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+/* Output area */
+#output {
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Cards for logs/colleges */
+.logCard, .collegeCard {
+  background: #fff;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.logCard h4, .collegeCard h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+.logCard p, .collegeCard p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+/* Form fields */
+input, select, textarea {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-top: 10px;
+}
+
+/* Form buttons */
+button.form-btn {
+  background: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button.form-btn:hover {
+  background: #388E3C;
+}
+
+/* Questions container */
+#questionsContainer div {
+  background: #fdfdfd;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Input fields inside question card */
+.qText, .opt, .correctOpt, .hint {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Responsive grid for output cards */
+@media (min-width: 768px) {
+  #output {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Align label + input side by side on wide screens */
+@media (min-width: 900px) {
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  input, select, textarea {
+    width: 65%;
+  }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a href="index.html"><img src="images/logo.png" class="logo" alt="Logo"></a>
+  <nav>
+    <button id="viewLogs">View Logs</button>
+    <button id="manageColleges">Manage Colleges</button>
+    <button id="createTest">Create Test</button>
+  </nav>
+</header>
+
+<div class="container">
+  <div id="output"></div>
+</div>
+
+<script type="module">
+import { db } from "./js/firebaseConfig.js";
+import { collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const output = document.getElementById('output');
+
+// Clear output helper
+function clearOutput() {
+  output.innerHTML = '';
+}
+
+// =========== View Logs ===========
+document.getElementById('viewLogs').addEventListener('click', async ()=>{
+  clearOutput();
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Logs';
+  output.appendChild(title);
+
+  const snap = await getDocs(collection(db,'logs'));
+  snap.docs.forEach(d=>{
+    const data = d.data();
+    const card = document.createElement('div');
+    card.className = 'logCard';
+    card.innerHTML = `
+      <h4>Action: ${data.action || 'N/A'}</h4>
+      <p>User: ${data.user || 'N/A'}</p>
+      <p>Time: ${data.time ? new Date(data.time.seconds*1000).toLocaleString() : 'N/A'}</p>
+      <p>Details: ${data.details || 'N/A'}</p>
+    `;
+    output.appendChild(card);
+  });
+});
+
+// =========== Manage Colleges ===========
+document.getElementById('manageColleges').addEventListener('click', ()=>{
+  clearOutput();
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Add New College';
+  output.appendChild(title);
+
+  const form = document.createElement('div');
+  form.className = 'collegeCard';
+  form.innerHTML = `
+    <label>Name: <input id="collegeName" placeholder="College Name"></label>
+    <label>Location: 
+      <select id="collegeLocation">
+        <option value="India">India</option>
+        <option value="Abroad">Abroad</option>
+      </select>
+    </label>
+    <label>Tuition Fee: <input type="number" id="collegeTuition"></label>
+    <label>Eligibility: <input id="collegeEligibility" placeholder="Eligibility Criteria"></label>
+    <label>Scholarships: <input id="collegeScholarships" placeholder="Scholarship Info"></label>
+    <label>Housing: <input id="collegeHousing" placeholder="Housing Facilities"></label>
+    <label>Streams / Interests:</label>
+    <select id="collegeStreams" multiple>
+      <option value="Engineering">Engineering</option>
+      <option value="Management">Management</option>
+      <option value="Science">Science</option>
+      <option value="Arts">Arts</option>
+      <option value="Design">Design</option>
+      <option value="Medical">Medical</option>
+      <option value="Ethics">Ethics</option>
+    </select>
+    <label>Course Types:</label>
+    <select id="collegeCourses" multiple>
+      <option value="B.Tech">B.Tech</option>
+      <option value="M.Tech">M.Tech</option>
+      <option value="MBA">MBA</option>
+      <option value="B.Sc">B.Sc</option>
+      <option value="M.Sc">M.Sc</option>
+    </select>
+    <label>Campus Support / Services: <textarea id="collegeSupport" placeholder="Support & Services info"></textarea></label>
+    <label>Rules & Regulations: <textarea id="collegeRules" placeholder="Rules & Regulations"></textarea></label>
+    <label>Placement Info: <textarea id="collegePlacement" placeholder="Campus Placement details"></textarea></label>
+    <button id="saveCollegeBtn" class="form-btn">Save College</button>
+  `;
+  output.appendChild(form);
+
+  document.getElementById('saveCollegeBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('collegeName').value;
+    const location = document.getElementById('collegeLocation').value;
+    const tuition = parseInt(document.getElementById('collegeTuition').value);
+    const eligibility = document.getElementById('collegeEligibility').value;
+    const scholarships = document.getElementById('collegeScholarships').value;
+    const housing = document.getElementById('collegeHousing').value;
+    const streams = Array.from(document.getElementById('collegeStreams').selectedOptions).map(o=>o.value);
+    const courses = Array.from(document.getElementById('collegeCourses').selectedOptions).map(o=>o.value);
+    const support = document.getElementById('collegeSupport').value;
+    const rules = document.getElementById('collegeRules').value;
+    const placement = document.getElementById('collegePlacement').value;
+
+    if(!name || !location) { alert('Name and location are required!'); return; }
+
+    await addDoc(collection(db,'colleges'),{
+      name, location, tuition, eligibility, scholarships, housing,
+      streams, courses, support, rules, placement,
+      createdAt:new Date()
+    });
+    alert('College added successfully!');
+    clearOutput();
+  });
+});
+
+// =========== Create Test ===========
+document.getElementById('createTest').addEventListener('click', ()=>{
+  clearOutput();
+  const title = document.createElement('div');
+  title.className = 'section-title';
+  title.textContent = 'Create New Test';
+  output.appendChild(title);
+
+  const form = document.createElement('div');
+  form.className = 'collegeCard';
+  form.innerHTML = `
+    <label>Title: <input id="testTitle" placeholder="Test Title"></label>
+    <label>Description: <input id="testDesc" placeholder="Description"></label>
+    <label>Duration (seconds): <input id="testDuration" type="number" value="900"></label>
+    <div id="questionsContainer"></div>
+    <button id="addQuestionBtn" class="form-btn">Add Question</button>
+    <button id="saveTestBtn" class="form-btn">Save Test</button>
+  `;
+  output.appendChild(form);
+
+  const questionsContainer = document.getElementById('questionsContainer');
+  const questions = [];
+
+  document.getElementById('addQuestionBtn').addEventListener('click', ()=>{
+    const qDiv = document.createElement('div');
+    qDiv.innerHTML = `
+      <h4>Question ${questions.length+1}</h4>
+      <input placeholder="Question Text" class="qText"><br>
+      <input placeholder="Option 1" class="opt"><br>
+      <input placeholder="Option 2" class="opt"><br>
+      <input placeholder="Option 3" class="opt"><br>
+      <input placeholder="Option 4" class="opt"><br>
+      <label>Correct Option Index (0-3): <input type="number" class="correctOpt" min="0" max="3"></label><br>
+      <input placeholder="Hint (optional)" class="hint"><hr>
+    `;
+    questionsContainer.appendChild(qDiv);
+    questions.push(qDiv);
+  });
+
+  document.getElementById('saveTestBtn').addEventListener('click', async ()=>{
+    const testTitle = document.getElementById('testTitle').value;
+    const testDesc = document.getElementById('testDesc').value;
+    const testDuration = parseInt(document.getElementById('testDuration').value);
+
+    const testQuestions = questions.map(qDiv => {
+      const qText = qDiv.querySelector('.qText').value;
+      const opts = Array.from(qDiv.querySelectorAll('.opt')).map(o=>o.value);
+      const correct = parseInt(qDiv.querySelector('.correctOpt').value);
+      const hint = qDiv.querySelector('.hint').value || 'No hint';
+      return { qid:'q'+Math.random().toString(36).substr(2,5), questionText:qText, options:opts, correctOptionIndex:correct, hint };
+    });
+
+    await addDoc(collection(db,'tests'),{
+      title:testTitle,
+      description:testDesc,
+      durationSeconds:testDuration,
+      questions:testQuestions,
+      createdBy:'admin',
+      createdAt:new Date()
+    });
+    alert('Test Created Successfully!');
+    clearOutput();
+  });
+});
+</script>
+</body>
+</html>

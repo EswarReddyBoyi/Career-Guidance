@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Admin Login</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .forgotPassword {
+    margin-top: 15px;
+    text-align: right;
+  }
+  .forgotPassword a {
+    color: #2196F3;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .forgotPassword a:hover {
+    text-decoration: underline;
+  }
+  #resetMessage {
+    margin-top: 10px;
+    color: green;
+  }
+</style>
+</head>
+<header class="site-header">
+  <a href="index.html">
+    <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+  </a>
+</header>
+
+<body>
+<main class="container">
+  <h1>Admin Login</h1>
+  <form id="adminLoginForm">
+    <label>Email: <input type="email" id="adminEmail" required></label><br>
+    <label>Password: <input type="password" id="adminPassword" required></label><br>
+    <button type="submit">Login</button>
+  </form>
+
+  <div class="forgotPassword">
+    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+  </div>
+  <div id="resetMessage"></div>
+
+  <div id="loginMessage"></div>
+  <div class="backLogin">
+    <p>Want to Create an Admin Account? <a href="adminSignup.html">Admin sign up</a></p>
+  </div>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBK88tVE-wZ9Wr2eaTxg0JpJ7PH8Zqse68",
+  authDomain: "careerguidance-66688.firebaseapp.com",
+  projectId: "careerguidance-66688",
+  storageBucket: "careerguidance-66688.appspot.com",
+  messagingSenderId: "465373265576",
+  appId: "1:465373265576:web:0569aae27bddd883a84c9d"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const form = document.getElementById('adminLoginForm');
+const msg = document.getElementById('loginMessage');
+const resetMsg = document.getElementById('resetMessage');
+const forgotLink = document.getElementById('forgotPasswordLink');
+
+// Admin login
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  msg.textContent = '';
+  const email = document.getElementById('adminEmail').value;
+  const password = document.getElementById('adminPassword').value;
+
+  try{
+    // Sign in
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+    // Check role from Firestore (admins collection)
+    const q = query(collection(db,'admins'), where('email','==',email));
+    const snap = await getDocs(q);
+
+    if(!snap.empty){
+      const adminData = snap.docs[0].data();
+      if(adminData.role === 'admin'){
+        window.location.href = 'adminPortal.html';
+      } else {
+        msg.textContent = 'Access denied. Not an admin!';
+      }
+    } else {
+      msg.textContent = 'Access denied. Not a registered admin!';
+    }
+
+  } catch(err){
+    msg.textContent = 'Login failed: ' + err.message;
+  }
+});
+
+// Forgot Password
+forgotLink.addEventListener('click', async (e)=>{
+  e.preventDefault();
+  const email = document.getElementById('adminEmail').value;
+  if(!email){
+    resetMsg.style.color = 'red';
+    resetMsg.textContent = 'Please enter your email to reset password.';
+    return;
+  }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    resetMsg.style.color = 'green';
+    resetMsg.textContent = 'Password reset email sent successfully! Check your inbox(spam)';
+  } catch(err){
+    resetMsg.style.color = 'red';
+    resetMsg.textContent = 'Error: ' + err.message;
+  }
+});
+</script>
+
+</body>
+</html>

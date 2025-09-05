@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Aptitude Test</title><link rel="stylesheet" href="css/styles.css"></head>
+<style>
+/* General Reset */
+body, html {
+  margin:0; padding:0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd, #ffffff);
+  min-height: 100vh;
+}
+
+/* Container styling: 80% width of page */
+.container {
+  width: 150%;
+  margin: 120px auto 60px auto; /* account for fixed header */
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Header h1 */
+h1 {
+  font-size: 36px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 15px;
+  color: #000;
+  text-align: center;
+}
+
+/* Test container: grid, max 4 per row */
+#testContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 30px;
+}
+
+/* Each question card */
+.questionCard {
+  background: #f9f9f9;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Question text */
+.questionCard p.questionText {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Answer buttons */
+.questionCard button.answerBtn {
+  padding: 18px 20px;
+  font-size: 18px;
+  border: none;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.questionCard button.answerBtn:hover {
+  transform: translateY(-3px) scale(1.05);
+  background: linear-gradient(135deg, #45a049, #39a037);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+.questionCard button.answerBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+/* Controls (Next/Previous/Submit) */
+#controls {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+#controls button {
+  padding: 20px 40px;
+  font-size: 20px;
+  border: none;
+  border-radius: 15px;
+  background: #4CAF50;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+#controls button:hover {
+  transform: translateY(-3px) scale(1.05);
+  background: #43a047;
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+}
+#controls button:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+</style>
+
+<header class="site-header">
+  <a href="index.html">
+    <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+  </a>
+</header>
+
+<body>
+  <a href="dashboard.html" class="back-btn">← Back</a>
+
+  <main class="container">
+    <h1>Aptitude Test</h1>
+    <div id="testContainer"></div>
+    <div id="controls"></div>
+    <script type="module" src="js/aptitude.js"></script>
+  </main>
+</body>
+</html>

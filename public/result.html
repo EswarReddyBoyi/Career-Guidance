@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Results</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+/* Main container styling */
+.container {
+  width: 80%;
+  min-height: 80vh;
+  margin: 120px auto 60px auto; /* account for fixed header */
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Heading styling */
+h1 {
+  font-size: 36px;
+  color: #000;
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 3px solid #f1f1f1;
+  padding-bottom: 15px;
+}
+
+/* Result cards grid */
+#resultsContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 per row */
+  gap: 25px;
+  margin-top: 30px;
+}
+
+/* Individual result card */
+.resultCard {
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.resultCard h3 {
+  margin: 0 0 10px 0;
+  font-size: 22px;
+  color: #333;
+}
+
+.resultCard p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.resultCard details summary {
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.resultCard ul {
+  margin-top: 5px;
+  padding-left: 20px;
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 1200px) { #resultsContainer { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { #resultsContainer { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { #resultsContainer { grid-template-columns: 1fr; } }
+</style>
+</head>
+
+<header class="site-header">
+    <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+</header>
+
+<body>
+  <a href="dashboard.html" class="back-btn">← Back</a>
+
+<main class="container">
+  <h1>My Test Results</h1>
+  <div id="resultsContainer"></div>
+</main>
+
+<script type="module">
+import { db, auth } from './js/firebaseConfig.js';
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const container = document.getElementById('resultsContainer');
+
+async function loadResults() {
+  if(!auth.currentUser){
+    container.innerHTML = 'Please login to see your results.';
+    return;
+  }
+
+  const q = query(collection(db,'results'), where('userId','==',auth.currentUser.uid));
+  const snap = await getDocs(q);
+  const results = snap.docs.map(d=>d.data());
+
+  if(results.length===0){
+    container.innerHTML = '<p>No test results found.</p>';
+    return;
+  }
+
+  container.innerHTML = results.map(r => `
+    <div class="resultCard">
+      <h3>Test: ${r.testId}</h3>
+      <p>Score: ${r.score}/${r.total}</p>
+      <p>Date: ${r.takenAt?.seconds ? new Date(r.takenAt.seconds*1000).toLocaleString() : 'N/A'}</p>
+      <details>
+        <summary>Answers</summary>
+        <ul>
+          ${r.answers.map(a=>`<li>QID: ${a.qid}, Selected Option: ${a.selected}</li>`).join('')}
+        </ul>
+      </details>
+    </div>
+  `).join('');
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user) loadResults();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>My Registered Colleges</title>
+<link rel="stylesheet" href="css/styles.css">
+<style>
+.container {
+  width: 80%;
+  margin: 120px auto 60px auto; /* account for fixed header */
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* Heading */
+h1 {
+  font-size: 36px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #f1f1f1;
+  padding-bottom: 15px;
+  color: #000;
+  text-align: center;
+}
+
+/* Registered colleges grid */
+#registeredList {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* exactly 4 per row */
+  gap: 25px;
+  margin-top: 30px;
+}
+
+/* College card styling */
+.collegeCard {
+  background: #f9f9f9;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.collegeCard h3 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.collegeCard p {
+  margin: 5px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+/* Toast container */
+#toastContainer {
+  position: fixed;
+  top: 100px; /* below header */
+  right: 30px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Individual toast */
+.toast {
+  min-width: 250px;
+  background-color: #333;
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideIn 0.3s forwards, fadeOut 0.5s 3s forwards;
+  font-size: 14px;
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Toast types */
+.toast.success { background-color: #4CAF50; }
+.toast.error { background-color: #f44336; }
+.toast.info { background-color: #2196F3; }
+.modal {
+  display: none; /* hidden by default */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 15px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-content p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+#confirmYes { background-color: #4CAF50; color: white; }
+#confirmNo { background-color: #f44336; color: white; }
+
+</style>
+</head>
+<header class="site-header">
+  <a href="index.html">
+    <img src="images/logo.png" alt="Career Guidance Logo" class="logo">
+  </a>
+</header>
+
+<body>
+<div id="toastContainer"></div>
+<a href="dashboard.html" class="back-btn">← Back</a>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal">
+  <div class="modal-content">
+    <p id="confirmMessage">Are you sure?</p>
+    <div class="modal-buttons">
+      <button id="confirmYes">Yes</button>
+      <button id="confirmNo">No</button>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+  <h1>My Registered Colleges</h1>
+  <div id="registeredList"></div>
+</main>
+<script type="module">
+import { db } from "./js/firebaseConfig.js";
+import { collection, getDocs, doc, getDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { logAction } from "./js/utils.js";
+
+const registeredListDiv = document.getElementById('registeredList');
+const userEmail = localStorage.getItem('userEmail') || 'guest';
+
+// Fetch all registrations for this student
+async function loadRegisteredColleges() {
+  const snap = await getDocs(collection(db,'registrations'));
+  const userRegistrations = snap.docs
+    .map(d => ({ id: d.id, ...d.data() }))
+    .filter(r => r.userEmail === userEmail);
+
+  if(userRegistrations.length === 0){
+    registeredListDiv.innerHTML = "<p>No colleges registered yet.</p>";
+    return;
+  }
+
+  function showConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('confirmModal');
+    const msg = document.getElementById('confirmMessage');
+    const yesBtn = document.getElementById('confirmYes');
+    const noBtn = document.getElementById('confirmNo');
+
+    msg.textContent = message;
+    modal.style.display = 'flex';
+
+    const cleanup = () => {
+      modal.style.display = 'none';
+      yesBtn.removeEventListener('click', onYes);
+      noBtn.removeEventListener('click', onNo);
+    }
+
+    const onYes = () => { cleanup(); resolve(true); };
+    const onNo = () => { cleanup(); resolve(false); };
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+  });
+}
+
+  // For each registration, fetch college details
+  const collegeCards = [];
+  for(const reg of userRegistrations){
+    const collegeDoc = await getDoc(doc(db,'colleges', reg.collegeId));
+    if(collegeDoc.exists()){
+      const c = collegeDoc.data();
+      collegeCards.push(`
+        <div class="collegeCard">
+          <h3>${c.name}</h3>
+          <p><strong>Location:</strong> ${c.location}</p>
+          <p><strong>Streams:</strong> ${c.streams?.join(', ')}</p>
+          <p><strong>Courses:</strong> ${c.courses?.join(', ')}</p>
+          <p><strong>Tuition:</strong> ${c.tuition || 'N/A'}</p>
+          <p><strong>Eligibility:</strong> ${c.eligibility || 'N/A'}</p>
+          <p><strong>Scholarships:</strong> ${c.scholarships || 'N/A'}</p>
+          <p><strong>Housing:</strong> ${c.housing || 'N/A'}</p>
+          <p><strong>Campus Support:</strong> ${c.support || 'N/A'}</p>
+          <p><strong>Rules:</strong> ${c.rules || 'N/A'}</p>
+          <p><strong>Placement:</strong> ${c.placement || 'N/A'}</p>
+          <p><strong>Registered At:</strong> ${reg.registeredAt?.toDate ? reg.registeredAt.toDate().toLocaleString() : new Date(reg.registeredAt).toLocaleString()}</p>
+          <button class="unregisterBtn" data-id="${reg.id}" style="margin-top:15px; padding:10px; background:#e53935; color:white; border:none; border-radius:8px; cursor:pointer;">Unregister</button>
+        </div>
+      `);
+    }
+  }
+
+  registeredListDiv.innerHTML = collegeCards.join('');
+
+  // Add click listeners to Unregister buttons
+document.querySelectorAll('.unregisterBtn').forEach(btn => {
+  btn.addEventListener('click', async e => {
+    const regId = e.target.dataset.id;
+
+    // Await the user's response from the modal
+    const confirmUnreg = await showConfirm('Are you sure you want to unregister this college?');
+    if (!confirmUnreg) return; // Exit if user clicked "No"
+
+    await deleteDoc(doc(db, 'registrations', regId));
+    logAction(userEmail, 'college_unregistered', { regId });
+
+    showToast('Successfully unregistered!', 'error');
+    loadRegisteredColleges(); // Refresh list
+  });
+});
+
+}
+
+loadRegisteredColleges();
+</script>
+<script>
+  function showToast(message, type='info', duration=3000) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, duration + 500);
+}
+
+</script>
+</body>
+</html>
