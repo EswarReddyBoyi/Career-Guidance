@@ -64,6 +64,7 @@ if (path === "index.html") {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, psw);
       logAction(userCred.user.uid, "login", { email });
+      localStorage.setItem('userEmail', userCred.user.email);
       window.location = "dashboard.html";
     } catch (err) {
       msg.style.color = "red";

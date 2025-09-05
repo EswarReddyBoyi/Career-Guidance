@@ -54,6 +54,7 @@ form.addEventListener('submit', async (e)=>{
 
   try{
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCredential.user.uid;
 
     // Save admin in Firestore
     await setDoc(doc(db, "admins", email), {

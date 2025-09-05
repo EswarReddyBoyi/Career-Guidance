@@ -352,6 +352,15 @@ form button[type="submit"]:hover {
   background-color: #0056b3; /* Darker blue on hover */
 }
 
+/* Add to your styles.css or inside <style> in this page */
+#signupForm input {
+  width: 100%;          /* full width of the form container */
+  padding: 10px 12px;   /* same padding for all */
+  margin-bottom: 12px;  /* spacing between inputs */
+  box-sizing: border-box; /* ensures padding doesn't increase width */
+  font-size: 16px;      /* uniform text size */
+}
+
 
 /* Responsive */
 @media (max-width: 768px){
