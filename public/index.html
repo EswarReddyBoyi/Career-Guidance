@@ -111,6 +111,14 @@ body, html {
 
 <script type="module" src="js/auth.js"></script>
 <script>
+if (!sessionStorage.getItem("animationPlayed")) {
+  sessionStorage.setItem("animationPlayed", "true");
+} else {
+  document.getElementById("landing").style.display = "none";
+  const mainContent = document.getElementById("mainContent");
+  mainContent.style.visibility = "visible";
+  mainContent.style.opacity = 1;
+}
 const landingPic = document.getElementById('landingPic');
 const landing = document.getElementById('landing');
 const mainContent = document.getElementById('mainContent');
