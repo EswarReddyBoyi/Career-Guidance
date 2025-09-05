@@ -129,22 +129,59 @@ firebase deploy
     <th> College SignUp Page</th>
   </tr>
   <tr>
-    <td><img src="public/images/image1.png" width="270"/> </td>
-    <td><img src="public/images/image2.png" width="270"/> </td>
-    <td><img src="public/images/image3.png" width="270"/> </td>
+    <td><img src="public/images/image4.png" width="270"/> </td>
+    <td><img src="public/images/image5.png" width="270"/> </td>
+    <td><img src="public/images/image6.png" width="270"/> </td>
   </tr>
 </table>
 
 <table>
   <tr>
     <th> Dashboard Page</th>
-    <th> Admin SignIn Page</th>
-    <th> College SignUp Page</th>
+    <th> Field of Intrest</th>
+    <th> Location Page</th>
   </tr>
   <tr>
-    <td><img src="public/images/image1.png" width="270"/> </td>
-    <td><img src="public/images/image2.png" width="270"/> </td>
-    <td><img src="public/images/image3.png" width="270"/> </td>
+    <td><img src="public/images/image7.png" width="270"/> </td>
+    <td><img src="public/images/image8.png" width="270"/> </td>
+    <td><img src="public/images/image9.png" width="270"/> </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th> Available Colleges</th>
+    <th> Registerd Colleges</th>
+    <th> Aptitude Test Page</th>
+  </tr>
+  <tr>
+    <td><img src="public/images/image10.png" width="270"/> </td>
+    <td><img src="public/images/image11.png" width="270"/> </td>
+    <td><img src="public/images/image12.png" width="270"/> </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th> Results Page</th>
+    <th> Profile Page</th>
+  </tr>
+  <tr>
+    <td><img src="public/images/image13.png" width="270"/> </td>
+    <td><img src="public/images/image14.png" width="270"/> </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th> Logs Page</th>
+    <th> Manage Colleges Page</th>
+    <th> Create Test Page</th>
+  </tr>
+  <tr>
+    <td><img src="public/images/image15.png" width="270"/> </td>
+    <td><img src="public/images/image16.png" width="270"/> </td>
+    <td><img src="public/images/image17.png" width="270"/> </td>
   </tr>
 </table>
 ---
@@ -195,4 +232,5 @@ All actions are logged under logs collection.
 Built by Eswar Reddy Boyi 
 
 email: eswarboyi7@gmail.com
+
 
