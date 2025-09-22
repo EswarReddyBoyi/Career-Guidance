@@ -50,7 +50,7 @@ The platform supports **student signups**, **college registrations**, **role-bas
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/22BCE8093-Eswar/Career-Guidance
+git clone https://github.com/EswarReddyBoyi/Career-Guidance
 cd Career-Guidance
 ````
 
@@ -232,6 +232,7 @@ All actions are logged under logs collection.
 Built by Eswar Reddy Boyi 
 
 email: eswarboyi7@gmail.com
+
 
 
 
