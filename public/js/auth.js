@@ -61,7 +61,7 @@ if (path === "college-signup.html") {
       logAction(uid, "college-signup", { collegeName: name });
       msg.style.color = "green";
       msg.textContent = "College registered successfully! Redirecting...";
-      setTimeout(() => window.location = "dashboard.html", 1500);
+      setTimeout(() => window.location = "college-dashboard.html", 1500);
     } catch (err) {
       msg.style.color = "red";
       msg.textContent = "Error: " + err.message;
