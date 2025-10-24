@@ -233,89 +233,112 @@ button.unregisterBtn:hover {
 <script type="module">
 import { db } from "./js/firebaseConfig.js";
 import { collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { logAction } from "./js/utils.js";
 
 const collegeListDiv = document.getElementById('collegeList');
-const filterStream = document.getElementById('filterStream');
-const filterCourse = document.getElementById('filterCourse');
 
 let allColleges = [];
 let userRegistrations = {};
-const userEmail = localStorage.getItem('userEmail') || 'guest';
+let currentUserId = null;
+
+const auth = getAuth();
+
+// Wait for auth state
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUserId = user.uid;
+    await loadColleges();
+  } else {
+    showToast("You are not logged in. Registration disabled.", "info");
+    currentUserId = null;
+    await loadColleges(); // still show colleges
+  }
+});
 
 async function loadRegistrations() {
-  const snap = await getDocs(collection(db,'registrations'));
+  if(!currentUserId) {
+    userRegistrations = {};
+    return;
+  }
+  const regSnap = await getDocs(collection(db, 'users', currentUserId, 'registrations'));
   userRegistrations = {};
-  snap.docs.forEach(d=>{
-    const data = d.data();
-    if(data.userEmail === userEmail) userRegistrations[data.collegeId] = d.id;
+  regSnap.docs.forEach(d => {
+    userRegistrations[d.data().collegeId] = d.id;
   });
 }
 
 async function loadColleges() {
   await loadRegistrations();
-  const snap = await getDocs(collection(db,'colleges'));
-  allColleges = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  const colSnap = await getDocs(collection(db, 'colleges'));
+  allColleges = colSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   renderColleges(allColleges);
 }
-function renderColleges(colleges){
-  collegeListDiv.innerHTML = colleges.map(c=>{
+
+function renderColleges(colleges) {
+  collegeListDiv.innerHTML = colleges.map(c => {
     const isRegistered = userRegistrations[c.id];
     return `
-    <div class="collegeCard">
-      <h3>${c.name}</h3>
-      <p><strong>Location:</strong> ${c.location}</p>
-      <p><strong>Streams:</strong> ${c.streams?.join(', ')}</p>
-      <p><strong>Courses:</strong> ${c.courses?.join(', ')}</p>
-      <p><strong>Tuition:</strong> ${c.tuition || 'N/A'}</p>
-      <button class="${isRegistered ? 'unregisterBtn' : 'registerBtn'}" data-id="${c.id}">
-        ${isRegistered ? 'Unregister' : 'Register'}
-      </button>
-    </div>
+      <div class="collegeCard">
+        <h3>${c.name}</h3>
+        <p><strong>Location:</strong> ${c.location}</p>
+        <p><strong>Streams:</strong> ${c.streams?.join(', ')}</p>
+        <p><strong>Courses:</strong> ${c.courses?.join(', ')}</p>
+        <p><strong>Tuition:</strong> ${c.tuition || 'N/A'}</p>
+        <button class="${isRegistered ? 'unregisterBtn' : 'registerBtn'}" data-id="${c.id}">
+          ${isRegistered ? 'Unregister' : 'Register'}
+        </button>
+      </div>
     `;
   }).join('');
 
-  // Button click handler
-  document.querySelectorAll('button.registerBtn, button.unregisterBtn').forEach(btn=>{
-    btn.addEventListener('click', async e=>{
+  document.querySelectorAll('button.registerBtn, button.unregisterBtn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      if(!currentUserId) {
+        showToast("Please login to register for a college", "error");
+        return;
+      }
       const collegeId = e.target.dataset.id;
+      const regDocRef = doc(db, 'users', currentUserId, 'registrations', collegeId);
+
       if(userRegistrations[collegeId]){
         // Unregister
-        await deleteDoc(doc(db,'registrations', userRegistrations[collegeId]));
-        logAction(userEmail,'college_unregistered',{collegeId});
+        await deleteDoc(regDocRef);
+        logAction(currentUserId, 'college_unregistered', { collegeId });
         delete userRegistrations[collegeId];
-        renderColleges(allColleges); // Re-render to update buttons
-        showToast('Unregistered from '+allColleges.find(c=>c.id===collegeId).name);
+        renderColleges(allColleges);
+        showToast('Unregistered from ' + allColleges.find(c=>c.id===collegeId).name, 'info');
       } else {
         // Register
-        const regRef = doc(db,'registrations',userEmail+'_'+collegeId);
-        await setDoc(regRef,{collegeId,userEmail,registeredAt:new Date()});
-        logAction(userEmail,'college_registered',{collegeId});
-        userRegistrations[collegeId] = userEmail+'_'+collegeId;
-        renderColleges(allColleges); // Re-render to update buttons
-        showToast('Registered for '+allColleges.find(c=>c.id===collegeId).name);
+        await setDoc(regDocRef, { collegeId, registeredAt: new Date() });
+        logAction(currentUserId, 'college_registered', { collegeId });
+        userRegistrations[collegeId] = collegeId;
+        renderColleges(allColleges);
+        showToast('Registered for ' + allColleges.find(c=>c.id===collegeId).name, 'success');
       }
     });
   });
 }
 
-document.getElementById('applyFilters').addEventListener('click', ()=>{
+// Filters
+document.getElementById('applyFilters').addEventListener('click', () => {
   const loc = document.getElementById('filterLocation').value;
   const stream = document.getElementById('filterStream').value;
   const course = document.getElementById('filterCourse').value;
   const maxTuition = parseInt(document.getElementById('filterMaxTuition').value);
 
   let filtered = allColleges;
-  if(loc) filtered = filtered.filter(c=>c.location===loc);
-  if(stream) filtered = filtered.filter(c=>c.streams?.includes(stream));
-  if(course) filtered = filtered.filter(c=>c.courses?.includes(course));
-  if(maxTuition) filtered = filtered.filter(c=>c.tuition <= maxTuition);
+  if(loc) filtered = filtered.filter(c => c.location === loc);
+  if(stream) filtered = filtered.filter(c => c.streams?.includes(stream));
+  if(course) filtered = filtered.filter(c => c.courses?.includes(course));
+  if(maxTuition) filtered = filtered.filter(c => c.tuition <= maxTuition);
 
   renderColleges(filtered);
 });
 
-loadColleges();
+
 </script>
+
 <script>
   function showToast(message, type='info', duration=3000) {
   const container = document.getElementById('toastContainer');
